@@ -1,4 +1,5 @@
-import { fromEvent, of, timer, merge, NEVER } from 'rxjs';
+import StateCore from 'markdown-it/lib/rules_core/state_core';
+import { fromEvent, of, timer, merge, NEVER, interval } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import {
   catchError,
@@ -21,4 +22,22 @@ import {
   setError,
 } from './utilities';
 
-const endpoint = 'http://localhost:3333/api/facts';
+const start$ = fromEvent(startButton, 'click').mapTo(true);
+const pause$ = fromEvent(pauseButton, 'click').mapTo(false);
+
+const counter1$ = merge(start$, pause$).pipe(
+  switchMap(shouldIBeRunning => {
+    if (shouldIBeRunning) {
+      return interval(1000)
+    }
+    else {
+      NEVER;
+    }
+  }),
+
+  scan((total) => total + 1, 0),
+)
+
+counter$.subscribe(setCount);
+
+// const endpoint = 'http://localhost:3333/api/facts';
